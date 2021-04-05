@@ -1,0 +1,311 @@
+---
+title: "EBImage Advance"
+author: "Qowim Musyafak (200605110137) / UIN Maulana Malik Ibrahim Malang TI-A Linear Algebra / Dosen Pembimbing Prof.Dr.Suhartono, M.Kom"
+date: "04 April 2021"
+output:
+ html_document:
+    toc: true
+    toc_float: 
+      collapsed: true
+      smooth_scroll: true 
+---
+
+```{r}
+```
+
+## Preparation
+
+### Instalasi Package   
+
+**Langkah ini adalah langkah yang wajib dilakukan agar fungsi dari EBImage itu dapat diakses dengan R Studio.**
+```{r}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("EBImage")
+
+```
+
+### Set Lokasi Kerja   
+
+```{r}
+#set lokasi kerja
+setwd("C:/Users/DELL/Documents/R/DUA/EBImage Advance/")
+```
+
+### Memanggil Package  
+
+**Memanggil package yang sudah diinstall di tahap 1, yaitu package EBImage.**
+
+```{r}
+#memanggi package
+library(EBImage)
+```
+
+### Import Gambar
+
+**Disini kita perlu melakukan assign (import)pada fungsi readImage dengan judul photo yang sudah ditaruh di folder set kerja dan memberinya nama misal Greenview.**
+
+```{r}
+Image <- readImage('Greenview.jpg')
+```
+
+## Basic Operation
+
+**Disini kita bisa melakukan operasi-operasi dasar, seperti menampilkan gambar, histsogram gambar ,writing.**
+
+### Display Image {.tabset}
+
+#### Method Browser
+
+```{r}
+img = readImage("Greenview.jpg")
+display(img, method="browser")
+```
+
+#### Display Image
+
+```{r}
+display(img)
+```
+
+```{r}
+colorMat = matrix(rep(c("red","green", "#0000ff"), 25), 5, 5)
+colorImg = Image(colorMat)
+colorImg
+```
+
+```{r}
+display(colorImg, interpolate=FALSE)
+```
+
+```{r}
+nuc = readImage(system.file("images", "nuclei.tif", package="EBImage"))
+display(nuc, method = "raster", all = TRUE)
+```
+
+```{r}
+nuc = readImage(system.file("images", "nuclei.tif", package="EBImage"))
+display(nuc, method = "raster")
+```
+
+### Histogram Gambar
+
+**Histogram gamabr adalah suatu grafik yang akan menahistmpilkan banyak hal bisa berupa kecerahan (brightness), kontas (contrast), warna (color) dari sebuah gambar.**
+
+```{r}
+hist(Image)
+```
+
+### Sifat Gambar
+
+**Disini kita bisa menampilkan sifat gambar berupa matriks.**
+
+```{r}
+print(img)
+```
+
+### Typography
+
+Disini kita bisa menambahkan text pada gambar kita. Lokasi text bisa disesuaikan posisinya menggunakan koordinat x,y.
+
+```{r}
+display(img)
+text(x = 750, y = 6, label = "GO GREEN!", adj = c(0,1), col = "white", cex = 2)
+text(x = 749, y = 3, label = "GO GREEN!", adj = c(0,1), col = "navy", cex = 2)
+```
+
+## Image Representation
+
+### Image Data
+
+**Disini kita bisa menggunakan fungsi yang ada di dalam library EBImage untuk menyimpan maupun memproses gambar. Semua fungsi yang ada di dalam EBImage dapat dipanggil berupa matrix dan array.**
+
+```{r}
+str(Image)
+```
+
+### Array Image
+
+**Kita juga bisa menampilkan gamber tersebut berupa Array**
+
+```{r}
+dim(Image)
+```
+
+### Image Data Summary
+
+**Disini kita bisa menampilkan data-data penting dari gambar kita. Untuk menampilkannya senditi yaitu dengan menuliskan nama objek gambarnya saja**
+
+```{r}
+Image
+```
+
+## Color Management
+
+```{r}
+colorMode(Image) <- Grayscale
+display(Image)
+```
+
+```{r}
+display(colorImg, interpolate=FALSE)
+```
+
+## Manipulating Image
+
+### Negative Image
+
+```{r}
+img_neg = max(img) - img
+display( img_neg )
+```
+
+### Brightness Image 
+
+```{r}
+img_comb = combine(
+  img,
+  img + 0.4,
+  img * 3,
+  img ^ 0.5
+)
+
+display(img_comb, all=TRUE)
+```
+
+### Transpose Image
+
+```{r}
+img_t = transpose(img)
+display( img_t )
+```
+
+## Spatial Transformation
+
+**Translate adalah dimana kita memindahkan bidang gambar dengan vektor dua dimensi yang sudah ditentukan, sehingga piksel yang masuk ke dalam area gambar disetel ke latar belakang dan piksel yang berada di area luar gambar dipotong.**
+
+```{r}
+img_translate = translate(img, c(150,-70))
+display(img_translate)
+```
+
+```{r}
+Imagetr <- translate(rotate(Image, 45), c(50, 0))
+display(Imagetr)
+```
+
+**Disini kita bisa melakukan resize pada gambar kita**
+
+```{r}
+img_resize = resize(img, w=450, h=450)
+display(img_resize )
+```
+
+**Disini kita juga bisa melakukan pencerminan terhadap gambar kita**
+
+```{r}
+img_flip = flip(img)
+img_flop = flop(img)
+
+display(combine(img_flip, img_flop), all=TRUE)
+```
+
+
+## Filtering
+
+Disini kita dapat memberikan sebuah filter pada gambar kita.
+
+### Linear, Median, Morphological, High Filtering {.tabset}
+
+#### High Pass Filtering
+
+```{r}
+fhi = matrix(1, nrow = 3, ncol = 3)
+fhi[2, 2] = -8
+img_fhi = filter2(img, fhi)
+display(img_fhi)
+```
+
+#### Linear Filtering
+
+```{r}
+w = makeBrush(size=31, shape='gaussian', sigma=5)
+plot(w[nrow(w)+1/2, ], ylab="2", xlab="", cex=0.7)
+```
+
+```{r}
+img_flo = filter2(img, w)
+display(img_flo)
+```
+
+#### Median Filtering
+
+```{r}
+l = length(img)
+n = l/10
+pixels = sample(l, n)
+img_noisy = img
+img_noisy[pixels] = runif(n, min=0, max=1)
+display(img_noisy)
+```
+
+#### Morphological Operation
+
+```{r}
+shapes = readImage(system.file('images', 'shapes.png', package = 'EBImage'))
+logo = shapes[110:512,1:130]
+display(logo)
+```
+
+```{r}
+kern = makeBrush(5, shape='diamond')
+display(kern, interpolate=FALSE)
+```
+
+```{r}
+logo_erode= erode(logo, kern)
+logo_dilate = dilate(logo, kern)
+
+display(combine(logo_erode, logo_dilate), all=TRUE)
+```
+
+## Image Manipulation
+
+**Disini kita bisa membuat gambar inti dan badan sel. Untuk memvisualisasikan sel, dengan melapisi gambar-gambar ini sebagai saluran hijau dan biru dari gambar berwarna palsu.**
+
+```{r}
+nuc = readImage(system.file('images', 'nuclei.tif', package='EBImage'))
+cel = readImage(system.file('images', 'cells.tif', package='EBImage'))
+
+cells = rgbImage(green=1.5*cel, blue=nuc)
+display(cells, all = TRUE)
+```
+
+**Hal pertama yang harus dilakukan adalah segmentasi menggunakan thresh, fillHull, bwlabel dan opening.**
+
+```{r}
+nmask = thresh(nuc, w=10, h=10, offset=0.05)
+nmask = opening(nmask, makeBrush(5, shape='disc'))
+nmask = fillHull(nmask)
+nmask = bwlabel(nmask)
+
+display(nmask, all=TRUE)
+```
+
+**Selanjutnya, kita gunakan inti tersegmentasi sebagai benih dalam segmentasi Voronoi dan sitoplasma**
+
+```{r}
+ctmask = opening(cel>0.1, makeBrush(5, shape='disc'))
+cmask = propagate(cel, seeds=nmask, mask=ctmask)
+
+display(ctmask, all=TRUE)
+```
+
+**Terakhir, kita visualisasikan segmentasi pada objek, menggunakan paintObject**
+
+```{r}
+segmented = paintObjects(cmask, cells, col='#ff00ff')
+segmented = paintObjects(nmask, segmented, col='#ffff00')
+
+display(segmented, all=TRUE)
+```
